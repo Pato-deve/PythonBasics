@@ -1,21 +1,26 @@
 import requests
+URL_API = 'https://dolarapi.com/v1/dolares/oficial'
+PRECIO_FALLBACK=1200
 
 def obtener_cotizacion():
-    url = 'https://dolarapi.com/v1/dolares/oficial'
-    response = requests.get(url, timeout=10)
-    
-    if response.status_code == 200:
+    try:
+        response = requests.get(URL_API, timeout=10)
+        response.raise_for_status()
         data = response.json()
-        precio_venta = data["venta"]
-        return precio_venta
-    else:
+        return data["venta"]
+    except (requests.RequestException, KeyError):
         print("No se pudo obtener cotización oficial. Se brindara el precio actualizado hasta 3/6/2025")
-        precio_venta=1160
-        return precio_venta
+        return PRECIO_FALLBACK
 
 def main():
-    venta = obtener_cotizacion()
-    dolares=float(input("¿Cuantos dolares quiere convertir? "))
-    return print(f"Los dolares equivalen a: ${dolares*venta:.2f} pesos.")
+    try:
+        venta= obtener_cotizacion()
+        dolares = float(input("Ingrese la cantidad de dolares a convertir: "))
+        pesos = dolares * venta
+        print(f"{dolares}USD equivalen a {pesos:.2f} ARS")
+    except ValueError:
+        print("Debe ingresar valores numericos.")
+        
     
-main()
+if __name__ == "__main__":
+    main()
